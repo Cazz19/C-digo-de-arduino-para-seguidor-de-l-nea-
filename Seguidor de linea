@@ -1,0 +1,109 @@
+// Definición pines EnA y EnB para el control de la velocidad
+const int VelocidadMotor1 = 9;
+const int VelocidadMotor2 = 5;
+
+// Definición de los pines de control de giro de los motores In1, In2, In3 e In4
+const int Motor1A = 8;
+const int Motor1B = 10;
+const int Motor2C = 7;
+const int Motor2D = 6;
+
+// Sensores infrarrojo - izquierdo y derecho
+const int infraPin = 3;
+const int infraPin1 = 11;
+
+// Variables para la captura de los valores: 0 - fondo claro y 1 - línea negra
+int valorInfra = 0;
+int valorInfra1 = 0;
+
+// Configuración inicial
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+
+  // Establecemos modo de los pines de los sensores infrarrojo
+  pinMode(infraPin, INPUT);
+  pinMode(infraPin1, INPUT);
+
+  // Establecemos modo de los pines del control de motores
+  pinMode(Motor1A, OUTPUT);
+  pinMode(Motor1B, OUTPUT);
+  pinMode(Motor2C, OUTPUT);
+  pinMode(Motor2D, OUTPUT);
+  pinMode(VelocidadMotor1, OUTPUT);
+  pinMode(VelocidadMotor2, OUTPUT);
+
+  // Configuramos los dos motores a velocidad 150/255
+  analogWrite(VelocidadMotor1, 65);
+  analogWrite(VelocidadMotor2, 85);
+
+  // Configuramos sentido de giro
+  digitalWrite(Motor1A, LOW);
+  digitalWrite(Motor1B, LOW);
+  digitalWrite(Motor2C, LOW);
+  digitalWrite(Motor2D, LOW);
+}
+
+// Función para leer sensores infrarrojos
+void leerSensores() {
+  valorInfra = digitalRead(infraPin);
+  valorInfra1 = digitalRead(infraPin1);
+}
+
+// Función para controlar motores
+void controlarMotores(int estado) {
+  switch (estado) {
+    case 0: // Ninguno en línea
+      digitalWrite(Motor1A, HIGH);
+      digitalWrite(Motor2D, HIGH);
+      delay(20);
+      digitalWrite(Motor1A, LOW);
+      digitalWrite(Motor2D, LOW);
+      delay(20);
+      break;
+    case 1: // Derecho en línea
+      digitalWrite(Motor1A, LOW);
+      digitalWrite(Motor2D, LOW);
+      delay(25);
+      digitalWrite(Motor1A, HIGH);
+      digitalWrite(Motor2D, LOW);
+      delay(20);
+      break;
+    case 2: // Izquierdo en línea
+      digitalWrite(Motor1A, LOW);
+      digitalWrite(Motor2D, LOW);
+      delay(25);
+      digitalWrite(Motor1A, LOW);
+      digitalWrite(Motor2D, HIGH);
+      delay(20);
+      break;
+    case 3: // Ambos en línea
+      digitalWrite(Motor1A, LOW);
+      digitalWrite(Motor1B, LOW);
+      digitalWrite(Motor2C, LOW);
+      digitalWrite(Motor2D, LOW);
+      break;
+  }
+}
+
+// Ejecución contínua
+void loop() {
+  leerSensores();
+  Serial.println(valorInfra);
+  Serial.println(valorInfra1);
+
+  // Cuatro escenarios
+  if (valorInfra == 0 && valorInfra1 == 0) {
+    Serial.println("Ninguno en línea");
+    controlarMotores(0);
+  } else if (valorInfra == 0 && valorInfra1 == 1) {
+    Serial.println("Derecho en línea");
+    controlarMotores(1);
+  } else if (valorInfra == 1 && valorInfra1 == 0) {
+    Serial.println("Izquierdo en línea");
+    controlarMotores(2);
+  } else if (valorInfra == 1 && valorInfra1 == 1) {
+    Serial.println("Ambos en línea");
+    controlarMotores(3);
+  }
+}
